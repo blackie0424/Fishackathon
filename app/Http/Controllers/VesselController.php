@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
+use Htmldom;
 use Illuminate\Http\Request;
 
 class VesselController extends Controller {
@@ -78,16 +79,32 @@ class VesselController extends Controller {
 
 	public function parse() {
 		$client = new Client();
-		$res = $client->request('GET', 'http://www.marinetraffic.com/en/ais/index/ships/all/per_page:50/page:2', [
+
+		//ship_type = 0 :undeine ship , ship_type= 2 :Fishing
+		$res = $client->request('GET', 'http://www.marinetraffic.com/en/ais/index/ships/all/per_page:10/page:1/ship_type:2', [
 			'headers' => [
 				'User-Agent' => 'testing/1.0',
 			],
 		]);
-		echo $res->getStatusCode();
-		// 200
-		echo $res->getHeaderLine('content-type');
-		// 'application/json; charset=utf8'
-		echo $res->getBody();
-		// {"type":"User"...'
+		$html = new \Htmldom($res->getBody());
+		$trs = $html->find('tr');
+		foreach ($trs as $key => $tr) {
+			if (0 !== $key) {
+				// $td = $tr->children(0);
+				// $counrty = $td->find('img')[0]->title;
+				$td = $tr->children(1);
+				$imo = $td->innertext;
+				// $td = $tr->children(2);
+				// $mmsi = $td->innertext;
+				// $td = $tr->children(3);
+				// $vesselName = $td->children(0)->innertext;
+				// $td = $tr->children(4);
+				// $image = (isset($td->find('img')[0])) ? $td->find('img')[0]->src : "";
+				dump($imo);
+
+			}
+
+		}
+
 	}
 }
