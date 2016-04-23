@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Vessel;
 use GuzzleHttp\Client;
 use Htmldom;
 use Illuminate\Http\Request;
+use Log;
 
 class VesselController extends Controller {
 	/**
@@ -15,7 +15,8 @@ class VesselController extends Controller {
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index() {
-		return 'vesel list';
+		Log::info('vessel list');
+		return 'vessel list';
 	}
 
 	/**
@@ -82,8 +83,8 @@ class VesselController extends Controller {
 		$client = new Client();
 
 		//total page =2908
-		$Page = 2908;
-		for ($i = 1; $i <= 20; $i++) {
+		//$page = 1000;
+		for ($i = 1; $i <= 10; $i++) {
 			//ship_type = 0 :undeine ship , ship_type= 2 :Fishing
 			$res = $client->request('GET', 'http://www.marinetraffic.com/en/ais/index/ships/all/per_page:50/page:' . $i . '/ship_type:2', [
 				'headers' => [
@@ -91,27 +92,32 @@ class VesselController extends Controller {
 				],
 			]);
 			$html = new \Htmldom($res->getBody());
+
+			// $page = new Page;
+			// $page->page = $i;
+			// $page->save();
+
 			$trs = $html->find('tr');
 			foreach ($trs as $key => $tr) {
 				if (0 !== $key) {
-					$td = $tr->children(0);
-					$country = (isset($td->find('img')[0]->title)) ? $td->find('img')[0]->title : "";
-					$td = $tr->children(1);
-					$imo = $this->get_string_between($td->innertext, "IMO: ", " <");
-					$td = $tr->children(2);
-					$mmsi = trim($td->innertext);
-					$td = $tr->children(3);
-					$name = (isset($td->children(0)->innertext)) ? $td->children(0)->innertext : "";
-					$td = $tr->children(4);
-					$image = (isset($td->find('img')[0])) ? "http:" . $td->find('img')[0]->src : "";
+					$td1 = $tr->children(0);
+					$country = (isset($td1->find('img')[0]->title)) ? $td1->find('img')[0]->title : "";
+					$td2 = $tr->children(1);
+					$imo = (isset($td2->innertext)) ? $this->get_string_between($td2->innertext, "IMO: ", " <") : "";
+					$td3 = $tr->children(2);
+					$mmsi = (isset($td3->innertext)) ? trim($td3->innertext) : "";
+					$td4 = $tr->children(3);
+					$name = (isset($td4->find("a")[0]->innertext)) ? $td4->find("a")[0]->innertext : "";
+					$td5 = $tr->children(4);
+					$image = (isset($td5->find('img')[0])) ? "http:" . $td5->find('img')[0]->src : "";
 
-					$vessel = new Vessel;
-					$vessel->name = $name;
-					$vessel->country = $country;
-					$vessel->imo = $imo;
-					$vessel->mmsi = $mmsi;
-					$vessel->image = $image;
-					$vessel->save();
+					// $vessel = new Vessel;
+					// $vessel->name = $name;
+					// $vessel->country = $country;
+					// $vessel->imo = $imo;
+					// $vessel->mmsi = $mmsi;
+					// $vessel->image = $image;
+					// $vessel->save();
 				}
 
 			}
