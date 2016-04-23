@@ -90,21 +90,31 @@ class VesselController extends Controller {
 		$trs = $html->find('tr');
 		foreach ($trs as $key => $tr) {
 			if (0 !== $key) {
-				// $td = $tr->children(0);
-				// $counrty = $td->find('img')[0]->title;
+				$td = $tr->children(0);
+				$counrty = (isset($td->find('img')[0]->title)) ? $td->find('img')[0]->title : "";
 				$td = $tr->children(1);
-				$imo = $td->innertext;
-				// $td = $tr->children(2);
-				// $mmsi = $td->innertext;
-				// $td = $tr->children(3);
-				// $vesselName = $td->children(0)->innertext;
-				// $td = $tr->children(4);
-				// $image = (isset($td->find('img')[0])) ? $td->find('img')[0]->src : "";
-				dump($imo);
-
+				$imo = $this->get_string_between($td->innertext, "IMO: ", " <");
+				$td = $tr->children(2);
+				$mmsi = trim($td->innertext);
+				$td = $tr->children(3);
+				$name = (isset($td->children(0)->innertext)) ? $td->children(0)->innertext : "";
+				$td = $tr->children(4);
+				$image = (isset($td->find('img')[0])) ? "http:" . $td->find('img')[0]->src : "";
 			}
 
 		}
-
 	}
+
+	public function get_string_between($string, $start, $end) {
+		$string = ' ' . $string;
+		$ini = strpos($string, $start);
+		if ($ini == 0) {
+			return '';
+		}
+
+		$ini += strlen($start);
+		$len = strpos($string, $end, $ini) - $ini;
+		return substr($string, $ini, $len);
+	}
+
 }
