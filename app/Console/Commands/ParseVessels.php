@@ -59,12 +59,13 @@ class ParseVessels extends Command {
 	private function parseVessels($page) {
 		$client = new Client();
 
-		//total page =2908
+		//total page =2908 when perpage is 50
+		//total page =7270 when perpage is 20
 		$current = 1 + $page;
 		$maxPage = 20 + $page;
 		for ($i = $current; $i <= $maxPage; $i++) {
 			//ship_type = 0 :undeine ship , ship_type= 2 :Fishing
-			$res = $client->request('GET', 'http://www.marinetraffic.com/en/ais/index/ships/all/per_page:50/page:' . $i . '/ship_type:2', [
+			$res = $client->request('GET', 'http://www.marinetraffic.com/en/ais/index/ships/all/per_page:20/page:' . $i . '/ship_type:2', [
 				'headers' => [
 					'User-Agent' => 'testing/1.0',
 				],
@@ -78,16 +79,16 @@ class ParseVessels extends Command {
 			$trs = $html->find('tr');
 			foreach ($trs as $key => $tr) {
 				if (0 !== $key) {
-					$td = $tr->children(0);
-					$country = (isset($td->find('img')[0]->title)) ? $td->find('img')[0]->title : "";
-					$td = $tr->children(1);
-					$imo = (isset($td->innertext)) ? $this->get_string_between($td->innertext, "IMO: ", " <") : "";
-					$td = $tr->children(2);
-					$mmsi = (isset($td->innertext)) ? trim($td->innertext) : "";
-					$td = $tr->children(3);
-					$name = (count($td->children(0)->innertext)) ? $td->children(0)->innertext : "";
-					$td = $tr->children(4);
-					$image = (isset($td->find('img')[0])) ? "http:" . $td->find('img')[0]->src : "";
+					$td1 = $tr->children(0);
+					$country = (isset($td1->find('img')[0]->title)) ? $td1->find('img')[0]->title : "";
+					$td2 = $tr->children(1);
+					$imo = (isset($td2->innertext)) ? $this->get_string_between($td2->innertext, "IMO: ", " <") : "";
+					$td3 = $tr->children(2);
+					$mmsi = (isset($td3->innertext)) ? trim($td3->innertext) : "";
+					$td4 = $tr->children(3);
+					$name = (isset($td4->find("a")[0]->innertext)) ? $td4->find("a")[0]->innertext : "";
+					$td5 = $tr->children(4);
+					$image = (isset($td5->find('img')[0])) ? "http:" . $td5->find('img')[0]->src : "";
 					$vessel = new Vessel;
 					$vessel->name = $name;
 					$vessel->country = $country;
